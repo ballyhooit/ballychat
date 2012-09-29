@@ -20,6 +20,7 @@ $(".chat-input input").keypress(function(e) {
     if(e.which == 13 && inputText) {
 
     socket.emit('me:message:send', {
+      room: 'Test',
       msg: inputText
     });
 
