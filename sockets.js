@@ -93,4 +93,5 @@ io.sockets.on('connection', function (socket) {
       nickname: nickname,
       provider: provider
     });
+  });
 });

@@ -10,3 +10,21 @@ var socket = io.connect();
       socket.emit('history request');
     }
   });
+
+socket.on('message:send', function(data) {
+	$('#chat-container').append('<p>'+data.msg+'</p>');
+});
+
+$(".chat-input input").keypress(function(e) {
+    var inputText = $(this).val().trim();
+    if(e.which == 13 && inputText) {
+
+    socket.emit('me:message:send', {
+      msg: inputText
+    });
+
+	$(this).val('');
+
+      return false;
+    }
+  });
