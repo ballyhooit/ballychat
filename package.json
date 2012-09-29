@@ -15,4 +15,7 @@
       , "url": "*"
       , "cookie": "*"
     }
+  , "devDependencies": {
+    "nodemon": "*"
+  }
 }
