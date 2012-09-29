@@ -1,11 +1,19 @@
 extends layout
 
 block content
-	body.home-page
-		h2 Hello
-		section#chat-container
-		section.chat-input
-			input
+	section#chat-container
+		p &nbsp;
+	section#chat-input
+		textarea(type="text", placeholder="Enter a message....", rows="2")
 
-		script(src="/socket.io/socket.io.js")
-		script(src="/js/scripts.js")
+	.modal#room-create.hide.fade
+		.modal-header
+			button.close(type='button', data-dismiss='modal') ×
+			h3#room-create-header Create New Room
+		.modal-body
+			input.new-room(type='text')
+		.modal-footer
+
+
+	script(src="/socket.io/socket.io.js")
+	script(src="/js/scripts.js")
