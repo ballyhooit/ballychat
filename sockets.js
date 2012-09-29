@@ -7,29 +7,36 @@ var parent = module.parent.exports
   , app = parent.app
   , server = parent.server
   , express = require('express')
-  , client = parent.client
   , sessionStore = parent.sessionStore
   , sio = require('socket.io')
   , parseCookies = require('connect').utils.parseSignedCookies
   , cookie = require('cookie')
-  , config = require('./config.json')
-  , fs = require('fs');
+  , fs = require('fs')
+  , redis = require('socket.io/node_modules/redis')
+  , redisUrl = require('url').parse(process.env.REDISTOGO_URL)
+  , redisAuth = redisUrl.auth.split(':');
 
+var store = redis.createClient(redisUrl.port, redisUrl.hostname);
+var pub = redis.createClient(redisUrl.port, redisUrl.hostname);
+var sub = redis.createClient(redisUrl.port, redisUrl.hostname);
+
+store.auth(redisAuth[1]);
+pub.auth(redisAuth[1]);
+sub.auth(redisAuth[1]);
 
 var io = sio.listen(server);
 io.set('authorization', function (hsData, accept) {
   if(hsData.headers.cookie) {
-    var cookies = parseCookies(cookie.parse(hsData.headers.cookie), config.session.secret)
-      , sid = cookies['balloons'];
+    var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
+      , sid = cookies['ballychat'];
 
     sessionStore.load(sid, function(err, session) {
       if(err || !session) {
         return accept('Error retrieving session!', false);
       }
 
-      hsData.balloons = {
-        user: session.passport.user,
-        room: /\/(?:([^\/]+?))\/?$/g.exec(hsData.headers.referer)[1]
+      hsData.ballychat = {
+        user: session.passport.user
       };
 
       return accept(null, true);
@@ -41,7 +48,10 @@ io.set('authorization', function (hsData, accept) {
 });
 
 io.configure(function() {
-  io.set('store', new sio.RedisStore);
+  io.set('store', new sio.RedisStore({
+    redisPub : pub
+    , redisSub : sub
+    , redisClient : store}));
   io.enable('browser client minification');
   io.enable('browser client gzip');
 });
@@ -49,48 +59,17 @@ io.configure(function() {
 
 io.sockets.on('connection', function (socket) {
   var hs = socket.handshake
-    , nickname = hs.balloons.user.username
-    , provider = hs.balloons.user.provider
+    , nickname = hs.ballychat.user.username
+    , provider = hs.ballychat.user.provider
     , userKey = provider + ":" + nickname
-    , room_id = hs.balloons.room
     , now = new Date()
-    // Chat Log handler
-    , chatlogFileName = './chats/' + room_id + (now.getFullYear()) + (now.getMonth() + 1) + (now.getDate()) + ".txt"
-    , chatlogWriteStream = fs.createWriteStream(chatlogFileName, {'flags': 'a'});
+    
 
-  socket.join(room_id);
-
-  client.sadd('sockets:for:' + userKey + ':at:' + room_id, socket.id, function(err, socketAdded) {
-    if(socketAdded) {
-      client.sadd('socketio:sockets', socket.id);
-      client.sadd('rooms:' + room_id + ':online', userKey, function(err, userAdded) {
-        if(userAdded) {
-          client.hincrby('rooms:' + room_id + ':info', 'online', 1);
-          client.get('users:' + userKey + ':status', function(err, status) {
-            io.sockets.in(room_id).emit('new user', {
-              nickname: nickname,
-              provider: provider,
-              status: status || 'available'
-            });
-          });
-        }
-      });
-    }
-  });
-
-  socket.on('my msg', function(data) {
+  socket.on('me:message:send', function(data) {
     var no_empty = data.msg.replace("\n","");
     if(no_empty.length > 0) {
-      var chatlogRegistry = {
-        type: 'message',
-        from: userKey,
-        atTime: new Date(),
-        withData: data.msg
-      }
 
-      chatlogWriteStream.write(JSON.stringify(chatlogRegistry) + "\n");
-      
-      io.sockets.in(room_id).emit('new msg', {
+      io.sockets.emit('message:send', {
         nickname: nickname,
         provider: provider,
         msg: data.msg
@@ -98,57 +77,20 @@ io.sockets.on('connection', function (socket) {
     }   
   });
 
-  socket.on('set status', function(data) {
+  socket.on('me:status:update', function(data) {
     var status = data.status;
 
-    client.set('users:' + userKey + ':status', status, function(err, statusSet) {
-      io.sockets.emit('user-info update', {
-        username: nickname,
-        provider: provider,
-        status: status
-      });
+    io.sockets.emit('user:status:update', {
+      username: nickname,
+      provider: provider,
+      status: status
     });
   });
 
-  socket.on('history request', function() {
-    var history = [];
-    var tail = require('child_process').spawn('tail', ['-n', 5, chatlogFileName]);
-    tail.stdout.on('data', function (data) {
-      var lines = data.toString('utf-8').split("\n");
-      
-      lines.forEach(function(line, index) {
-        if(line.length) {
-          var historyLine = JSON.parse(line);
-          history.push(historyLine);
-        }
-      });
-
-      socket.emit('history response', {
-        history: history
-      });
-    });
-  });
 
   socket.on('disconnect', function() {
-    // 'sockets:at:' + room_id + ':for:' + userKey
-    client.srem('sockets:for:' + userKey + ':at:' + room_id, socket.id, function(err, removed) {
-      if(removed) {
-        client.srem('socketio:sockets', socket.id);
-        client.scard('sockets:for:' + userKey + ':at:' + room_id, function(err, members_no) {
-          if(!members_no) {
-            client.srem('rooms:' + room_id + ':online', userKey, function(err, removed) {
-              if (removed) {
-                client.hincrby('rooms:' + room_id + ':info', 'online', -1);
-                chatlogWriteStream.destroySoon();
-                io.sockets.in(room_id).emit('user leave', {
-                  nickname: nickname,
-                  provider: provider
-                });
-              }
-            });
-          }
-        });
-      }
+    io.sockets.emit('room:leave', {
+      nickname: nickname,
+      provider: provider
     });
-  });
 });

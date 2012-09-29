@@ -1,24 +1,18 @@
 {
-    "name": "Balloons.io"
+    "name": "Ballychat"
   , "description": "Web multi-room chat server and client ready to use."
   , "version": "0.0.1"
   , "dependencies": {
-        "express": "3.0.0rc1"
-      , "connect": "2.4.x"
-      , "cookie": "0.0.x"
+        "express": "3.0.0rc4"
+      , "connect": "*"
       , "jade": "*"
       , "socket.io": ">=0.9.7"
       , "redis": ">= 0.7.2"
-      , "connect-redis": "1.4.x"
-      , "passport": "0.1.x"
-      , "passport-twitter": "0.1.x"
-      , "passport-facebook": "0.1.x"
-      , "forever": "*"
-      , "redis-url": "0.1.0"
+      , "connect-redis": "*"
+      , "passport": ">= 0.1.x"
+      , "passport-github": ">= 0.1.x"
+      , "passport-http": ">= 0.2.x"
       , "url": "*"
+      , "cookie": "*"
     }
-  , "engines": {
-    "node": ">= 0.6.0",
-    "npm": ">= 0.6"
-  }
 }
