@@ -29,6 +29,7 @@ init(store);
 
 var io = sio.listen(server);
 io.set('authorization', function (hsData, accept) {
+  console.log(hsData.address);
   if(hsData.headers.cookie) {
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
       , sid = cookies['ballychat'];
@@ -46,7 +47,19 @@ io.set('authorization', function (hsData, accept) {
       
     });
   } else {
-    return accept('No cookie transmitted.', false);
+    if(hsData.address.address = process.env.HUBOT_ADDRESS) {
+      hsData.ballychat = {
+        user : {
+          username: process.env.HUBOT_NAME,
+          provider: 'Hubot'
+        }
+      }
+
+      return accept(null, true);
+
+    } else {
+      return accept(null, false);
+    }
   }
 });
 
@@ -70,6 +83,7 @@ io.sockets.on('connection', function (socket) {
   socket.join('home');
 
   socket.on('me:message:send', function(data) {
+    console.log(data);
     var no_empty = data.msg.replace("\n","");
     if(no_empty.length > 0) {
       io.sockets.in(data.room).emit('message:send', {
