@@ -23,8 +23,8 @@ module.exports = function(client){
    * Clean all forgoten sockets in Redis.io
    */
 
-  client.del('rooms:info', function(err, reply) {
-    client.sadd('rooms:info','home');
+  client.del('rooms:public', function(err, reply) {
+    client.sadd('rooms:public','home');
   });
 
 

@@ -1,12 +1,23 @@
 var socket = io.connect();
+var initd = 0;
 
 socket.on('error', function (reason){
   console.error('Unable to connect Socket.IO', reason);
 });
 
 socket.on('connect', function (){
-  console.info('successfully established a working connection');
-  
+  socket.emit('me:chat:init');
+});
+
+socket.on('chat:init', function(data) {
+  if(initd == 0) {
+    $('ul#room-list').empty();
+    for(i = 0; i < data.length; i++) {
+      console.log(data[i]);
+      $('ul#room-list').append('<li><a href="#" id="'+data[i]+'">'+data[i]+'</a></li>');
+    }
+    initd = 1;
+  }
 });
 
 socket.on('message:send', function(data) {

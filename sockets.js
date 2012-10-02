@@ -82,6 +82,13 @@ io.sockets.on('connection', function (socket) {
   
   socket.join('home');
 
+  socket.on('me:chat:init', function(data) {
+    store.smembers('rooms:public', function(err, data) {
+      console.log(data);
+      socket.emit('chat:init', data);
+    });
+  });
+
   socket.on('me:message:send', function(data) {
     console.log(data);
     var no_empty = data.msg.replace("\n","");
@@ -105,8 +112,8 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('me:room:create', function(data) {
-    store.sadd('rooms:info',data.room, function(err, reply) {
-      store.smembers('rooms:info', function(er, res) {
+    store.sadd('rooms:public',data.room, function(err, reply) {
+      store.smembers('rooms:public', function(er, res) {
         io.sockets.emit('room:create', data);
       });
     });
