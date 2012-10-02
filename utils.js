@@ -13,10 +13,11 @@ exports.restrict = function(req, res, next){
  * Generates a URI Like key for a room
  */       
 
-exports.genRoomKey = function() {
-  var shasum = crypto.createHash('sha1');
-  shasum.update(Date.now().toString());
-  return shasum.digest('hex').substr(0,6);
+exports.roomInit = function(client, socket, fn) {
+  client.smembers('rooms:public', function(err, data) {
+    fn(data);
+  });
+
 };
 
 /*
