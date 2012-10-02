@@ -12,16 +12,27 @@ socket.on('connect', function (){
 socket.on('chat:init', function(data) {
   if(initd == 0) {
     $('ul#room-list').empty();
-    for(i = 0; i < data.length; i++) {
-      console.log(data[i]);
-      $('ul#room-list').append('<li><a href="#" id="'+data[i]+'">'+data[i]+'</a></li>');
+    $('#chat-users').empty();
+    for(i = 0; i < data.rooms.length; i++) {
+      $('ul#room-list').append('<li><a href="#" id="'+data.rooms[i]+'">'+data.rooms[i]+'</a></li>');
+    }
+    for(i = 0; i < data.users.length; i++) {
+      $('#chat-users').append('<div id="user"><p>'+data.users[i]+'</p></div>');
     }
     initd = 1;
   }
 });
 
+socket.on('user:join', function(data) {
+  console.log(data);
+  console.log($('#chat-users .'+data.user).length);
+  if($('#chat-users .'+data.user).length == 0) {
+    $('#chat-users').append('<div id="user" class="'+data.user+'"><p>'+data.user+'</p></div>');
+  }
+});
+
 socket.on('message:send', function(data) {
-	$('#chat-container').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
+	$('#chat-content').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
 });
 
 socket.on('room:create', function(data) {

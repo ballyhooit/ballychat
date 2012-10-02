@@ -1,8 +1,9 @@
 extends layout
 
 block content
-	section#chat-container
-		p &nbsp;
+	section#chat-container.row
+		#chat-users.span2
+		#chat-content.span10
 	section#chat-input
 		textarea(type="text", placeholder="Enter a message....", rows="2")
 

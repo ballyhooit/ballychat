@@ -80,12 +80,20 @@ io.sockets.on('connection', function (socket) {
     , userKey = provider + ":" + nickname
     , now = new Date();
   
-  socket.join('home');
+  store.sadd('rooms:public:home:users', nickname, function(err, data) {
+    socket.join('home');
+    socket.emit('user:join', {user: nickname, room: 'home'})
+  });
 
   socket.on('me:chat:init', function(data) {
-    store.smembers('rooms:public', function(err, data) {
-      console.log(data);
-      socket.emit('chat:init', data);
+    store.smembers('rooms:public', function(err, rooms) {
+      data = {};
+      data.rooms = rooms;
+      store.smembers('rooms:public:home:users', function(err, users) {
+        data.users = users;
+        console.log(data);
+        socket.emit('chat:init', data);
+      });
     });
   });
 
@@ -120,9 +128,11 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('disconnect', function() {
-    io.sockets.emit('room:leave', {
-      nickname: nickname,
-      provider: provider
+    store.srem('rooms:public:home:users', nickname, function(err,data) {
+      io.sockets.emit('room:leave', {
+        nickname: nickname,
+        provider: provider
+      });
     });
   });
 });
