@@ -27,6 +27,10 @@ socket.on('user:join', function(data) {
   }
 });
 
+socket.on('user:leave', function(data) {
+  $('#chat-users .'+data.user).remove();
+});
+
 socket.on('message:send', function(data) {
   console.log(data);
 	$('#chat-content').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');

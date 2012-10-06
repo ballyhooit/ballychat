@@ -85,6 +85,7 @@ io.sockets.on('connection', function (socket) {
     console.log('joining home');
     utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
       socket.join('home');
+      io.sockets.in('home').emit('user:join',{user:nickname});
     });
   }
 
