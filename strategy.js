@@ -5,7 +5,6 @@
 
 var passport = require('passport')
   , GithubStrategy = require('passport-github').Strategy
-  , HTTPStrategy = require('passport-http').Strategy;
 
 /*
  * Auth strategy

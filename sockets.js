@@ -16,7 +16,8 @@ var parent = module.parent.exports
   , utils = require('./utils')
   , redis = require('socket.io/node_modules/redis')
   , redisUrl = require('url').parse(process.env.REDISTOGO_URL)
-  , redisAuth = redisUrl.auth.split(':');
+  , redisAuth = redisUrl.auth.split(':')
+  , hubotAddr = process.env.HUBOT_ADDRESS.split(',');
 
 var store = redis.createClient(redisUrl.port, redisUrl.hostname);
 var pub = redis.createClient(redisUrl.port, redisUrl.hostname);
@@ -30,7 +31,6 @@ init(store);
 
 var io = sio.listen(server);
 io.set('authorization', function (hsData, accept) {
-  console.log(hsData.address);
   if(hsData.headers.cookie) {
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
       , sid = cookies['ballychat'];
@@ -48,7 +48,9 @@ io.set('authorization', function (hsData, accept) {
       
     });
   } else {
-    if(hsData.address.address = process.env.HUBOT_ADDRESS) {
+    if(hubotAddr.some(function(value) {
+      return hsData.address.address.indexOf(value) > -1;
+    })) {
       hsData.ballychat = {
         user : {
           username: process.env.HUBOT_NAME,
@@ -82,7 +84,6 @@ io.sockets.on('connection', function (socket) {
     , now = new Date();
   
   if(store.sismember('chat:rooms:home:members', nickname)) {
-    console.log('joining home');
     utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
       socket.join('home');
       io.sockets.in('home').emit('user:join',{user:nickname});
@@ -95,14 +96,12 @@ io.sockets.on('connection', function (socket) {
       data.rooms = rooms;
       store.smembers('chat:rooms:home:members', function(err, users) {
         data.users = users;
-        console.log(data);
         socket.emit('chat:init', data);
       });
     });
   });
 
   socket.on('me:message:send', function(data) {
-    console.log(data);
     var no_empty = data.msg.replace("\n","");
     if(no_empty.length > 0) {
       io.sockets.in(data.room).emit('message:send', {

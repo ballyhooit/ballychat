@@ -26,7 +26,7 @@ exports.createRoom = function(client, data, next) {
       if(reply = 1) {
         next();
       } else {
-        console.log(err);
+
       }
     })
   }

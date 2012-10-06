@@ -28,7 +28,7 @@ module.exports = function(client) {
     if(!err) {
     	client.sadd('chat:rooms', 'home');
     } else {
-      console.log('Error cleaning up')
+      
     }
   });
 

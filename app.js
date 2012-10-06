@@ -32,7 +32,7 @@ app.configure(function() {
 require('./routes');
 
 exports.server = http.createServer(app).listen(app.get('port'), function() {
-  console.log('Balloons.io started on port %d', app.get('port'));
+  console.log('Ballyhoo started on port %d', app.get('port'));
 });
 
 require('./sockets')

@@ -1,20 +1,27 @@
 {
-    "name": "Ballychat"
-  , "description": "Web multi-room chat server and client ready to use."
-  , "version": "0.0.1"
-  , "dependencies": {
-        "express": "3.0.0rc4"
-      , "connect": "*"
-      , "jade": "*"
-      , "socket.io": ">=0.9.7"
-      , "redis": ">= 0.7.2"
-      , "connect-redis": "*"
-      , "passport": ">= 0.1.x"
-      , "passport-github": ">= 0.1.x"
-      , "url": "*"
-      , "cookie": "*"
-    }
-  , "devDependencies": {
+  "name": "Ballychat",
+  "description": "Web multi-room chat server and client ready to use.",
+  "version": "0.0.1-1",
+  "dependencies": {
+    "express": "3.0.0rc4",
+    "connect": "*",
+    "jade": "*",
+    "socket.io": ">=0.9.7",
+    "redis": ">= 0.7.2",
+    "connect-redis": "*",
+    "passport": ">= 0.1.x",
+    "passport-github": ">= 0.1.x",
+    "url": "*",
+    "cookie": "*"
+  },
+  "devDependencies": {
     "nodemon": "*"
+  },
+  "subdomain": "ballychat",
+  "scripts": {
+    "start": "app.js"
+  },
+  "engines": {
+    "node": "0.8.x"
   }
 }

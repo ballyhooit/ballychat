@@ -20,8 +20,6 @@ socket.on('chat:init', function(data) {
 });
 
 socket.on('user:join', function(data) {
-  console.log(data);
-  console.log($('#chat-users .'+data.user).length);
   if($('#chat-users .'+data.user).length == 0) {
     $('#chat-users').append('<div id="user" class="'+data.user+'"><p>'+data.user+'</p></div>');
   }
@@ -32,13 +30,11 @@ socket.on('user:leave', function(data) {
 });
 
 socket.on('message:send', function(data) {
-  console.log(data);
 	$('#chat-content').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
 });
 
 socket.on('room:create', function(data) {
   $('ul#room-list').append('<li><a href="#" id="'+data.room+'">'+data.room+'</a></li>');
-  console.log(data);
 });
 
 $("#chat-input textarea").keypress(function(e) {
@@ -59,7 +55,6 @@ $("#chat-input textarea").keypress(function(e) {
 $("body").on('keypress', 'input.new-room', function(e) {
   var inputText = $(this).val().trim();
   if(e.which == 13 && inputText) {
-    console.log('pressed enter');
 
     socket.emit('me:room:create', {
       room: inputText
