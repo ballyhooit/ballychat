@@ -5,7 +5,8 @@
 
 var parent = module.parent.exports 
   , app = parent.app
-  , passport = require('passport');
+  , passport = require('passport')
+  , utils = require('../utils.js');
 
 /*
  * Homepage
@@ -41,6 +42,10 @@ app.get('/logout', function(req, res){
  * Chat Route
  */
 
-app.get('/chat', function(req, res) {
-  res.render('chat');
+app.get('/chat', utils.restrict, function(req, res) {
+  if(req.isAuthenticated()){
+    res.render('chat');
+  } else{
+    res.redirect('/index');
+  }
 });

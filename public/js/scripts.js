@@ -1,5 +1,4 @@
 var socket = io.connect();
-var initd = 0;
 
 socket.on('error', function (reason){
   console.error('Unable to connect Socket.IO', reason);
@@ -10,16 +9,13 @@ socket.on('connect', function (){
 });
 
 socket.on('chat:init', function(data) {
-  if(initd == 0) {
-    $('ul#room-list').empty();
-    $('#chat-users').empty();
-    for(i = 0; i < data.rooms.length; i++) {
-      $('ul#room-list').append('<li><a href="#" id="'+data.rooms[i]+'">'+data.rooms[i]+'</a></li>');
-    }
-    for(i = 0; i < data.users.length; i++) {
-      $('#chat-users').append('<div id="user"><p>'+data.users[i]+'</p></div>');
-    }
-    initd = 1;
+  $('ul#room-list').empty();
+  $('#chat-users').empty();
+  for(i = 0; i < data.rooms.length; i++) {
+    $('ul#room-list').append('<li><a href="#" id="'+data.rooms[i]+'">'+data.rooms[i]+'</a></li>');
+  }
+  for(i = 0; i < data.users.length; i++) {
+    $('#chat-users').append('<div id="user"><p>'+data.users[i]+'</p></div>');
   }
 });
 
@@ -31,7 +27,12 @@ socket.on('user:join', function(data) {
   }
 });
 
+socket.on('user:leave', function(data) {
+  $('#chat-users .'+data.user).remove();
+});
+
 socket.on('message:send', function(data) {
+  console.log(data);
 	$('#chat-content').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
 });
 

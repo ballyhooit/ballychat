@@ -13,6 +13,7 @@ var parent = module.parent.exports
   , cookie = require('cookie')
   , fs = require('fs')
   , init = require('./init')
+  , utils = require('./utils')
   , redis = require('socket.io/node_modules/redis')
   , redisUrl = require('url').parse(process.env.REDISTOGO_URL)
   , redisAuth = redisUrl.auth.split(':');
@@ -80,16 +81,19 @@ io.sockets.on('connection', function (socket) {
     , userKey = provider + ":" + nickname
     , now = new Date();
   
-  store.sadd('rooms:public:home:users', nickname, function(err, data) {
-    socket.join('home');
-    socket.emit('user:join', {user: nickname, room: 'home'})
-  });
+  if(store.sismember('chat:rooms:home:members', nickname)) {
+    console.log('joining home');
+    utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
+      socket.join('home');
+      io.sockets.in('home').emit('user:join',{user:nickname});
+    });
+  }
 
   socket.on('me:chat:init', function(data) {
-    store.smembers('rooms:public', function(err, rooms) {
+    store.smembers('chat:rooms', function(err, rooms) {
       data = {};
       data.rooms = rooms;
-      store.smembers('rooms:public:home:users', function(err, users) {
+      store.smembers('chat:rooms:home:members', function(err, users) {
         data.users = users;
         console.log(data);
         socket.emit('chat:init', data);
@@ -109,30 +113,13 @@ io.sockets.on('connection', function (socket) {
     }   
   });
 
-  socket.on('me:status:update', function(data) {
-    var status = data.status;
-
-    io.sockets.emit('user:status:update', {
-      username: nickname,
-      provider: provider,
-      status: status
-    });
-  });
-
   socket.on('me:room:create', function(data) {
-    store.sadd('rooms:public',data.room, function(err, reply) {
-      store.smembers('rooms:public', function(er, res) {
-        io.sockets.emit('room:create', data);
-      });
+    utils.createRoom(store, data, function() {
+      io.sockets.emit('room:create', data);
     });
   });
 
   socket.on('disconnect', function() {
-    store.srem('rooms:public:home:users', nickname, function(err,data) {
-      io.sockets.emit('room:leave', {
-        nickname: nickname,
-        provider: provider
-      });
-    });
+    utils.userDisconnect(store, nickname, io);
   });
 });
