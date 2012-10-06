@@ -1,4 +1,3 @@
-var crypto = require('crypto');
 
 /*
  * Restrict paths
@@ -10,153 +9,36 @@ exports.restrict = function(req, res, next){
 };
 
 /*
- * Generates a URI Like key for a room
- */       
-
-exports.roomInit = function(client, socket, fn) {
-  client.smembers('rooms:public', function(err, data) {
-    fn(data);
-  });
-
-};
-
-/*
- * Room name is valid
- */
-
-exports.validRoomName = function(req, res, fn) {
-  req.body.room_name = req.body.room_name.trim();
-  var nameLen = req.body.room_name.length;
-
-  if(nameLen < 255 && nameLen >0) {
-    fn();
-  } else {
-    res.redirect('back');
-  }
-};
-
-/*
  * Checks if room exists
  */
-exports.roomExists = function(req, res, client, fn) {
-  client.hget('balloons:rooms:keys', encodeURIComponent(req.body.room_name), function(err, roomKey) {
-    if(!err && roomKey) {
-      res.redirect( '/' + roomKey );
-    } else {
-      fn()
-    }
+exports.roomExists = function(client, data) {
+  client.sismember('chat:rooms:', data.room , function(err, reply) {
+    return reply;
   });
 };
 
 /*
  * Creates a room
  */       
-exports.createRoom = function(req, res, client) {
-  var roomKey = exports.genRoomKey()
-    , room = {
-        key: roomKey,
-        name: req.body.room_name,
-        admin: req.user.provider + ":" + req.user.username,
-        locked: 0,
-        online: 0
-      };
-
-  client.hmset('rooms:' + roomKey + ':info', room, function(err, ok) {
-    if(!err && ok) {
-      client.hset('balloons:rooms:keys', encodeURIComponent(req.body.room_name), roomKey);
-      client.sadd('balloons:public:rooms', roomKey);
-      res.redirect('/' + roomKey);
-    } else {
-      res.send(500);
-    }
-  });
+exports.createRoom = function(client, data, next) {
+  if(exports.roomExists(client,data) = 0) {
+    client.sadd('chat:rooms',data.room, function(err, reply) {
+      if(reply = 1) {
+        next();
+      } else {
+        console.log(err);
+      }
+    })
+  }
 };
 
-/*
- * Get Room Info
- */
-
-exports.getRoomInfo = function(req, res, client, fn) { 
-  client.hgetall('rooms:' + req.params.id + ':info', function(err, room) {
-    if(!err && room && Object.keys(room).length) fn(room);
-    else res.redirect('back');
-  });
-};
-
-exports.getPublicRoomsInfo = function(client, fn) {
-  client.smembers('balloons:public:rooms', function(err, publicRooms) {
-    var rooms = []
-      , len = publicRooms.length;
-    if(!len) fn([]);
-
-    publicRooms.sort(exports.caseInsensitiveSort);
-
-    publicRooms.forEach(function(roomKey, index) {
-      client.hgetall('rooms:' + roomKey + ':info', function(err, room) {
-        // prevent for a room info deleted before this check
-        if(!err && room && Object.keys(room).length) {
-          // add room info
-          rooms.push({
-            key: room.key || room.name, // temp
-            name: room.name,
-            online: room.online || 0
-          });
-
-          // check if last room
-          if(rooms.length == len) fn(rooms);
-        } else {
-          // reduce check length
-          len -= 1;
-        }
-      });
-    });
-  });
-};
 /*
  * Get connected users at room
  */
 
-exports.getUsersInRoom = function(req, res, client, room, fn) {
-  client.smembers('rooms:' + req.params.id + ':online', function(err, online_users) {
-    var users = [];
-
-    online_users.forEach(function(userKey, index) {
-      client.get('users:' + userKey + ':status', function(err, status) {
-        var msnData = userKey.split(':')
-          , username = msnData.length > 1 ? msnData[1] : msnData[0]
-          , provider = msnData.length > 1 ? msnData[0] : "twitter";
-
-        users.push({
-            username: username,
-            provider: provider,
-            status: status || 'available'
-        });
-      });
-    });
-
-    fn(users);
-
-  });
-};
-
-/*
- * Get public rooms
- */
-
-exports.getPublicRooms = function(client, fn){
-  client.smembers("balloons:public:rooms", function(err, rooms) {
-    if (!err && rooms) fn(rooms);
-    else fn([]);
-  });
-};
-/*
- * Get User status
- */
-
-exports.getUserStatus = function(user, client, fn){
-  client.get('users:' + user.provider + ":" + user.username + ':status', function(err, status) {
-    if (!err && status) fn(status);
-    else fn('available');
+exports.getUsersInRoom = function(client, data) {
+  client.smembers('chat:'+data.room+':members', function(err, reply) {
+    return reply;
   });
 };
 
@@ -164,19 +46,43 @@ exports.getUserStatus = function(user, client, fn){
  * Enter to a room
  */
 
-exports.enterRoom = function(req, res, room, users, rooms, status){
-  res.locals({
-    room: room,
-    rooms: rooms,
-    user: {
-      nickname: req.user.username,
-      provider: req.user.provider,
-      status: status
-    },
-    users_list: users
+exports.enterRoom = function(client, data, next){
+  client.sadd('chat:rooms:'+data.room+':members',data.nickname, function(err, reply) {
+    if(!err) {
+      client.sadd('chat:users:'+data.nickname+':rooms', data.room, function(er, rep) {
+        if(!err) {
+          next();
+        }
+      });
+    }
   });
-  res.render('room');
 };
+
+exports.leaveRoom = function(client, nickname, room, io) {
+  client.srem('chat:rooms:'+room+':members', nickname, function(err,reply) {
+    io.sockets.in(room).emit('user:leave', {nickname: nickname});
+  });
+}
+
+/*
+ * Get rooms that a user is a member of
+ */
+
+exports.getUserRooms = function(client, data) {
+  client.smembers('chat:users:'+data.nickname+':rooms', function(err, reply) {
+    return reply;
+  });
+};
+
+exports.userDisconnect = function(client, nickname, io) {
+  client.smembers('chat:users:'+nickname+':rooms', function(err, rooms) {
+    rooms.every(function(element, index, array) {
+      exports.leaveRoom(client, nickname, element, io);
+    })
+    //client.srem('chat:users',nickname);
+  });
+};
+
 
 /*
  * Sort Case Insensitive

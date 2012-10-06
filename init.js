@@ -7,7 +7,8 @@
  * Module dependencies
  */
 
-var fs = require('fs');
+var fs = require('fs'),
+	utils = require('./utils.js');
 
 
 /*
@@ -17,16 +18,19 @@ var fs = require('fs');
  * API @public
  */
 
-module.exports = function(client){
+module.exports = function(client) {
 
   /*
    * Clean all forgoten sockets in Redis.io
    */
 
-  client.del('rooms:public', function(err, reply) {
-    client.sadd('rooms:public','home');
+  client.del('chat:rooms:home:members', 'chat:rooms:home', 'chat:rooms', 'chat:users', function(err, reply) {
+    if(!err) {
+    	client.sadd('chat:rooms', 'home');
+    } else {
+      console.log('Error cleaning up')
+    }
   });
-
 
 };
 
