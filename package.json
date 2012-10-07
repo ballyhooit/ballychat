@@ -1,7 +1,7 @@
 {
   "name": "Ballychat",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.0.1-1",
+  "version": "0.0.1-14",
   "dependencies": {
     "express": "3.0.0rc4",
     "connect": "*",
@@ -20,6 +20,14 @@
   "subdomain": "ballychat",
   "scripts": {
     "start": "app.js"
+  },
+  "env": {
+    "REDISTOGO_URL": "redis://wiebersk:3d6178d53be371b34e3de85e1822f12b@koi.redistogo.com:9534/",
+    "GITHUB_CALLBACK": "http://ballychat.jit.su/auth/github/callback",
+    "HUBOT_NAME": "Ballybot",
+    "GITHUB_SECRET": "fbae5926d76770187df791ada43a6c29fdbcd460",
+    "HUBOT_ADDRESS": "165.225.130.240,165.225.130.241,165.225.131.4,165.225.131.5,165.225.129.253,165.225.130.235,165.225.130.237,165.225.130.238,165.225.130.239,205.237.179.142",
+    "GITHUB_CONSUMER": "2764e2873903894ee53e"
   },
   "engines": {
     "node": "0.8.x"

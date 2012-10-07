@@ -30,8 +30,20 @@ sub.auth(redisAuth[1]);
 init(store);
 
 var io = sio.listen(server);
+
+io.configure(function() {
+  io.set('store', new sio.RedisStore({
+    redisPub : pub
+    , redisSub : sub
+    , redisClient : store}));
+  io.set('origins', '*:*');
+  io.enable('browser client minification');
+  io.enable('browser client gzip');
+});
+
 io.set('authorization', function (hsData, accept) {
   if(hsData.headers.cookie) {
+    console.log(hsData.address.address);
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
       , sid = cookies['ballychat'];
 
@@ -50,7 +62,8 @@ io.set('authorization', function (hsData, accept) {
   } else {
     if(hubotAddr.some(function(value) {
       return hsData.address.address.indexOf(value) > -1;
-    })) {
+    }) || hsData.address.address.split('.')[0] == '10') {
+      console.log(hsData.address.address);
       hsData.ballychat = {
         user : {
           username: process.env.HUBOT_NAME,
@@ -58,21 +71,16 @@ io.set('authorization', function (hsData, accept) {
         }
       }
 
+      console.log('Hubot?');
+
       return accept(null, true);
 
     } else {
+      console.log(hsData.address.address);
+      console.log('something faild');
       return accept(null, false);
     }
   }
-});
-
-io.configure(function() {
-  io.set('store', new sio.RedisStore({
-    redisPub : pub
-    , redisSub : sub
-    , redisClient : store}));
-  io.enable('browser client minification');
-  io.enable('browser client gzip');
 });
 
 
