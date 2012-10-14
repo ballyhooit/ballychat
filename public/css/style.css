@@ -1,24 +1,26 @@
-.container {
-    display: block;
-    position:absolute;
-    height:auto;
-    bottom:0;
-    top:0;
-    left:0;
-    right:0;
-    margin-bottom:20px;
-    margin-right:20px;
-    margin-left:20px;
+body {
+	overflow:hidden;
+}
+
+.fill {
+	min-height: 100%;
+    height: 100%;
 }
 
 section#chat-container {
-    height:80%;
+    display:block;
+}
+
+#chat-container #chat-content {
+    height:450px;
     display:block;
 }
 
 section#chat-input {
-    height:auto;
     display:block;
+    position:fixed;
+    bottom:0;
+    z-index: 99999;
 }
 
 section#chat-input textarea {

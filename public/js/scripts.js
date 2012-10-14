@@ -1,3 +1,7 @@
+$(function() {
+  $('.nano').nanoScroller();
+});
+
 var socket = io.connect();
 
 socket.on('error', function (reason){
@@ -30,7 +34,8 @@ socket.on('user:leave', function(data) {
 });
 
 socket.on('message:send', function(data) {
-	$('#chat-content').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
+	$('#chat-content-messages').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
+  $('.nano').nanoScroller().nanoScroller({scroll:'bottom'});
 });
 
 socket.on('room:create', function(data) {
