@@ -1,5 +1,9 @@
 $(function() {
+  resizeHandle();
   $('.nano').nanoScroller();
+  $(window).resize(function() {
+    resizeHandle();
+  });
 });
 
 var socket = io.connect();
@@ -70,3 +74,10 @@ $("body").on('keypress', 'input.new-room', function(e) {
     return false;
   }
 });
+
+function resizeHandle() {
+  chatHeight = $(window).height() - $('header.navbar').height() - $('#chat-input').height() - 25;
+
+  $('#chat-container').height(chatHeight);
+  $('.nano').nanoScroller().nanoScroller({scroll:'bottom'});
+}

@@ -12,7 +12,7 @@ section#chat-container {
 }
 
 #chat-container #chat-content {
-    height:450px;
+    height:100%;
     display:block;
 }
 

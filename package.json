@@ -1,7 +1,7 @@
 {
   "name": "Ballychat",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.0.1-14",
+  "version": "0.2.0",
   "dependencies": {
     "express": "3.0.0rc4",
     "connect": "*",
