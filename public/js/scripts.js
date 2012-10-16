@@ -38,7 +38,17 @@ socket.on('user:leave', function(data) {
 });
 
 socket.on('message:send', function(data) {
-	$('#chat-content-messages').append('<p><strong>'+data.nickname+': </strong>'+data.msg+'</p>');
+  var tst = data.msg.autoLink({
+    callback: function(url) {
+      var cbtst = /\.(gif|png|jpe?g)$/i.test(url);
+      console.log(cbtst);
+      return /\.(gif|png|jpe?g)$/i.test(url) ? '<img src="' + url + '" />' : "<a href='" + url + "' target:'_blank'" + ">" + url + "</a>";
+    }
+  });
+  str = '<p><strong>'+data.nickname+': </strong>'+tst+' </p>';
+  console.log(str);
+  console.log(tst);
+	$('#chat-content-messages').append(str);
   $('.nano').nanoScroller().nanoScroller({scroll:'bottom'});
 });
 
