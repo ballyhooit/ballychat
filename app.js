@@ -35,7 +35,7 @@ app.configure(function() {
   app.use(express.bodyParser());
   app.use(express.cookieParser('ThisIsASecret'));
   app.use(express.session({
-    key: "ballychat-local",
+    key: nconf.get('SESSION_KEY'),
     store: sessionStore
   }));
   app.use(passport.initialize());

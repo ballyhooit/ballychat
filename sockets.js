@@ -48,7 +48,7 @@ io.set('authorization', function (hsData, accept) {
   if(hsData.headers.cookie) {
     console.log(hsData.address.address);
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
-      , sid = cookies['ballychat-local'];
+      , sid = cookies[parent.nconf.get('SESSION_KEY')];
 
     sessionStore.load(sid, function(err, session) {
       if(err || !session) {
