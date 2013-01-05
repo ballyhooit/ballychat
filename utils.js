@@ -12,7 +12,7 @@ exports.restrict = function(req, res, next){
  * Checks if room exists
  */
 exports.roomExists = function(client, data) {
-  client.sismember('chat:rooms:', data.room , function(err, reply) {
+  client.sismember('chat:rooms', data.room , function(err, reply) {
     return reply;
   });
 };
@@ -21,9 +21,14 @@ exports.roomExists = function(client, data) {
  * Creates a room
  */       
 exports.createRoom = function(client, data, next) {
-  if(exports.roomExists(client,data) = 0) {
+  var test = client.sismember('chat:rooms', data.room);
+  console.log(test);
+  console.log(exports.roomExists(client,data));
+  if(test == true) {
+    console.log('room does not exist');
     client.sadd('chat:rooms',data.room, function(err, reply) {
-      if(reply = 1) {
+      console.log('test');
+      if(reply == 1) {
         next();
       } else {
 
@@ -62,7 +67,7 @@ exports.leaveRoom = function(client, nickname, room, io) {
   client.srem('chat:rooms:'+room+':members', nickname, function(err,reply) {
     io.sockets.in(room).emit('user:delete', {user: nickname});
   });
-}
+};
 
 /*
  * Get rooms that a user is a member of
@@ -87,7 +92,6 @@ exports.userDisconnect = function(client, nickname, io) {
 /*
  * Sort Case Insensitive
  */
-
 exports.caseInsensitiveSort = function (a, b) { 
    var ret = 0;
 

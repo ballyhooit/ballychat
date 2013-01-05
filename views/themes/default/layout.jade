@@ -28,14 +28,10 @@ html
 		header.navbar
 			.navbar-inner
 				a.brand(href='#') Ballychat
-				ul.nav
-					li
-						a.dropdown-toggle(href='#', data-toggle="dropdown") Rooms
-						ul.dropdown-menu#room-list
-							li
-								a#home.active(href="#") Home
-					li
-						a(data-toggle='modal', data-target='#room-create')
-							i.icon-plus
+				ul.nav#room-list
+					li#room
+						a(href='#', data-room='home') Home
+				a.pull-right(data-toggle='modal', data-target='#room-create')
+					i.icon-plus
 
 		block content

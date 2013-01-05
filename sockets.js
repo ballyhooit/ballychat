@@ -15,9 +15,10 @@ var parent = module.parent.exports
   , init = require('./init')
   , utils = require('./utils')
   , redis = require('socket.io/node_modules/redis')
-  , redisUrl = require('url').parse(process.env.REDISTOGO_URL)
-  , redisAuth = redisUrl.auth.split(':')
-  , hubotAddr = process.env.HUBOT_ADDRESS.split(',');
+  , redisUrl =  parent.redisUrl  
+  , redisAuth = parent.redisAuth
+  , hubotAddr = parent.nconf.get('HUBOT_ADDRESS').split(',')
+  , dl = require('delivery');
 
 var store = redis.createClient(redisUrl.port, redisUrl.hostname);
 var pub = redis.createClient(redisUrl.port, redisUrl.hostname);
@@ -45,10 +46,11 @@ io.set('authorization', function (hsData, accept) {
   if(hsData.headers.cookie) {
     console.log(hsData.address.address);
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
-      , sid = cookies['ballychat'];
+      , sid = cookies['ballychat-local'];
 
     sessionStore.load(sid, function(err, session) {
       if(err || !session) {
+        console.log(err);
         return accept('Error retrieving session!', false);
       }
 
@@ -66,7 +68,7 @@ io.set('authorization', function (hsData, accept) {
       console.log(hsData.address.address);
       hsData.ballychat = {
         user : {
-          username: process.env.HUBOT_NAME,
+          username: parent.nconf.get('HUBOT_NAME'),
           provider: 'Hubot'
         }
       }
@@ -89,7 +91,8 @@ io.sockets.on('connection', function (socket) {
     , nickname = hs.ballychat.user.username
     , provider = hs.ballychat.user.provider
     , userKey = provider + ":" + nickname
-    , now = new Date();
+    , now = new Date()
+    , delivery = dl.listen(socket);
   
   if(store.sismember('chat:rooms:home:members', nickname)) {
     utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
@@ -111,6 +114,7 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('message:post', function(data) {
     var no_empty = data.msg.replace("\n","");
+    console.log(data);
     if(no_empty.length > 0) {
       io.sockets.in(data.room).emit('message:get', {
         nickname: nickname,
@@ -118,6 +122,13 @@ io.sockets.on('connection', function (socket) {
         msg: data.msg
       });        
     }   
+  });
+
+  socket.on('room:join', function(data) {
+    utils.enterRoom(store, {nickname: nickname, room:data.room}, function() {
+      socket.join(data.room);
+      io.sockets.in(data.room).emit('user:get',{user:nickname});
+    });
   });
 
   socket.on('room:post', function(data) {
