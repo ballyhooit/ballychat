@@ -2,8 +2,25 @@ extends layout
 
 block content
 	section#chat-container.row
-		#chat-users.span2
-		#chat-content.span10.nano
+		#chat-settings.span3
+			ul.nav.nav-tabs#settings-tabs
+				li.active
+					a(data-toggle="tab", href='#users')
+						i.icon-user
+				li	
+					a(data-toggle="tab", href='#rooms')
+						i.icon-home
+				li
+					a(data-toggle="tab", href='#settings')
+						i.icon-pencil
+			div.tab-content
+				div.tab-pane.active#users
+					
+				div.tab-pane#rooms
+					p Rooms
+				div.tab-pane#settings
+					p Settings
+		#chat-content.span9.nano
 			#chat-content-messages.content
 	section#chat-input.container
 		textarea(type="text", placeholder="Enter a message....", rows="2")
@@ -18,4 +35,5 @@ block content
 
 
 	script(src="/socket.io/socket.io.js")
+	script(src="/js/delivery.js")
 	script(src="/js/scripts.js")

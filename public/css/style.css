@@ -26,3 +26,7 @@ section#chat-input {
 section#chat-input textarea {
     width:100%;
 }
+
+#room-list .pull-right {
+    float:right;
+}
