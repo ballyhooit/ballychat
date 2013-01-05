@@ -3,13 +3,20 @@ var express = require('express')
   , passport = require('passport')
   , RedisStore = require('connect-redis')(express)
   , fs = require('fs')
-  , nconf = exports.nconf = require('nconf');
+  , nconf = exports.nconf = require('nconf')
+  , knox = require('knox');
 
 var options = {
    key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
 };
 nconf.env().file('config.json');
+
+var client = exports.client = knox.createClient({
+  key: nconf.get('AWS_KEY'),
+  secret: nconf.get('AWS_SECRET'),
+  bucket: nconf.get('AWS_BUCKET')
+});
 
 var redisUrl = exports.redisUrl = require('url').parse(nconf.get('REDISTOGO_URL'))
    , redisAuth = exports.redisAuth = redisUrl.auth.split(':');

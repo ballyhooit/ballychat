@@ -18,7 +18,9 @@ var parent = module.parent.exports
   , redisUrl =  parent.redisUrl  
   , redisAuth = parent.redisAuth
   , hubotAddr = parent.nconf.get('HUBOT_ADDRESS').split(',')
-  , dl = require('delivery');
+  , dl = require('delivery')
+  , client = parent.client
+  , mime = require('mime');
 
 var store = redis.createClient(redisUrl.port, redisUrl.hostname);
 var pub = redis.createClient(redisUrl.port, redisUrl.hostname);
@@ -134,6 +136,19 @@ io.sockets.on('connection', function (socket) {
   socket.on('room:post', function(data) {
     utils.createRoom(store, data, function() {
       io.sockets.emit('room:get', data);
+    });
+  });
+
+  delivery.on('receive.success', function(file) {
+    var mimeType = mime.lookup(file.name);
+    var headers = {
+      'Content-Type': mimeType,
+      'x-amz-acl': 'public-read'
+    };
+    var req = client.putBuffer(file.buffer, file.name, headers, function(err, res) {
+      if(res.statusCode == 200) {
+        console.log(req.url);
+      }
     });
   });
 
