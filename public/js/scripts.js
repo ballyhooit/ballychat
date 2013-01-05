@@ -17,7 +17,8 @@ socket.on('connect', function (){
 });
 
 socket.on('chat:init', function(data) {
-  $('ul#room-list').empty();
+  $('body').data('current-room','home');
+  $('ul#room-list #room').remove();
   $('#chat-users').empty();
   for(i = 0; i < data.rooms.length; i++) {
     $('ul#room-list').append(room_template_function({room:data.rooms[i]}));
@@ -48,10 +49,11 @@ socket.on('room:get', function(data) {
 
 $("#chat-input textarea").keypress(function(e) {
     var inputText = $(this).val().trim();
+    var currentRoom = $('body').data('current-room');
     if(e.which == 13 && inputText) {
 
     socket.emit('message:post', {
-      room: 'home',
+      room: currentRoom,
       msg: inputText
     });
 
@@ -59,6 +61,13 @@ $("#chat-input textarea").keypress(function(e) {
 
     return false;
   }
+});
+
+$('ul#room-list').on('click','li', function(e) {
+  var room = $(e.target).data('room');
+  socket.emit('room:join', {room: room});
+  console.log(room);
+  $('body').data('current-room',room);
 });
 
 $("body").on('keypress', 'input.new-room', function(e) {
@@ -84,4 +93,4 @@ function resizeHandle() {
 
 var message_template_function = Handlebars.compile("<p><strong>{{nickname}} : </strong>{{msg}}</p>");
 var user_template_function = Handlebars.compile('<div id="user" class="{{user}}"><p>{{user}}</p></div>');
-var room_template_function = Handlebars.compile('<li><a href="#" id="{{room}}">{{room}}</a></li>')
+var room_template_function = Handlebars.compile('<li class="room"><a href="#" data-room="{{room}}">{{room}}</a></li>')

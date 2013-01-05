@@ -3,7 +3,8 @@
  * Module dependencies
  */
 
-var passport = require('passport')
+var parent = module.parent.exports
+  , passport = require('passport')
   , GithubStrategy = require('passport-github').Strategy
 
 /*
@@ -19,9 +20,9 @@ passport.deserializeUser(function(user, done) {
 });
 
 passport.use(new GithubStrategy({
-    clientID: process.env.GITHUB_CONSUMER,
-    clientSecret: process.env.GITHUB_SECRET,
-    callbackURL: process.env.GITHUB_CALLBACK
+    clientID: parent.nconf.get('GITHUB_CONSUMER'),
+    clientSecret: parent.nconf.get('GITHUB_SECRET'),
+    callbackURL: parent.nconf.get('GITHUB_CALLBACK')
   },
   function(token, tokenSecret, profile, done) {
     return done(null, profile);

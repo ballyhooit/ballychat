@@ -12,7 +12,9 @@
     "passport": ">= 0.1.x",
     "passport-github": ">= 0.1.x",
     "url": "0.7.9",
-    "cookie": "0.0.5"
+    "cookie": "0.0.5",
+    "nconf": "0.6.7",
+    "delivery": "0.0.3"
   },
   "devDependencies": {
     "nodemon": "*"
