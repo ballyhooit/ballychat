@@ -1,18 +1,18 @@
 {
   "name": "Ballychat",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.2.0",
+  "version": "0.2.2-1",
   "dependencies": {
-    "express": "3.0.0rc4",
-    "connect": "*",
-    "jade": "*",
+    "express": "3.0.5",
+    "connect": "2.7.1",
+    "jade": "0.27.7",
     "socket.io": ">=0.9.7",
     "redis": ">= 0.7.2",
-    "connect-redis": "*",
+    "connect-redis": "1.4.5",
     "passport": ">= 0.1.x",
     "passport-github": ">= 0.1.x",
-    "url": "*",
-    "cookie": "*"
+    "url": "0.7.9",
+    "cookie": "0.0.5"
   },
   "devDependencies": {
     "nodemon": "*"

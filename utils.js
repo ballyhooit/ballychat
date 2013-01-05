@@ -60,7 +60,7 @@ exports.enterRoom = function(client, data, next){
 
 exports.leaveRoom = function(client, nickname, room, io) {
   client.srem('chat:rooms:'+room+':members', nickname, function(err,reply) {
-    io.sockets.in(room).emit('user:leave', {user: nickname});
+    io.sockets.in(room).emit('user:delete', {user: nickname});
   });
 }
 

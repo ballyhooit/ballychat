@@ -94,7 +94,7 @@ io.sockets.on('connection', function (socket) {
   if(store.sismember('chat:rooms:home:members', nickname)) {
     utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
       socket.join('home');
-      io.sockets.in('home').emit('user:join',{user:nickname});
+      io.sockets.in('home').emit('user:get',{user:nickname});
     });
   }
 
@@ -109,10 +109,10 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
-  socket.on('me:message:send', function(data) {
+  socket.on('message:post', function(data) {
     var no_empty = data.msg.replace("\n","");
     if(no_empty.length > 0) {
-      io.sockets.in(data.room).emit('message:send', {
+      io.sockets.in(data.room).emit('message:get', {
         nickname: nickname,
         provider: provider,
         msg: data.msg
@@ -120,9 +120,9 @@ io.sockets.on('connection', function (socket) {
     }   
   });
 
-  socket.on('me:room:create', function(data) {
+  socket.on('room:post', function(data) {
     utils.createRoom(store, data, function() {
-      io.sockets.emit('room:create', data);
+      io.sockets.emit('room:get', data);
     });
   });
 

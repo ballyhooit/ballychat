@@ -20,47 +20,37 @@ socket.on('chat:init', function(data) {
   $('ul#room-list').empty();
   $('#chat-users').empty();
   for(i = 0; i < data.rooms.length; i++) {
-    $('ul#room-list').append('<li><a href="#" id="'+data.rooms[i]+'">'+data.rooms[i]+'</a></li>');
+    $('ul#room-list').append(room_template_function({room:data.rooms[i]}));
   }
   for(i = 0; i < data.users.length; i++) {
-    $('#chat-users').append('<div id="user"><p>'+data.users[i]+'</p></div>');
+    $('#chat-users').append(user_template_function({user:data.users[i]}));
   }
 });
 
-socket.on('user:join', function(data) {
+socket.on('user:get', function(data) {
   if($('#chat-users .'+data.user).length == 0) {
-    $('#chat-users').append('<div id="user" class="'+data.user+'"><p>'+data.user+'</p></div>');
+    $('#chat-users').append(user_template_function(data));
   }
 });
 
-socket.on('user:leave', function(data) {
+socket.on('user:delete', function(data) {
   $('#chat-users .'+data.user).remove();
 });
 
-socket.on('message:send', function(data) {
-  var tst = data.msg.autoLink({
-    callback: function(url) {
-      var cbtst = /\.(gif|png|jpe?g)$/i.test(url);
-      console.log(cbtst);
-      return /\.(gif|png|jpe?g)$/i.test(url) ? '<img src="' + url + '" />' : "<a href='" + url + "' target:'_blank'" + ">" + url + "</a>";
-    }
-  });
-  str = '<p><strong>'+data.nickname+': </strong>'+tst+' </p>';
-  console.log(str);
-  console.log(tst);
-	$('#chat-content-messages').append(str);
+socket.on('message:get', function(data) {
+  $('#chat-content-messages').append(message_template_function(data));
   $('.nano').nanoScroller().nanoScroller({scroll:'bottom'});
 });
 
-socket.on('room:create', function(data) {
-  $('ul#room-list').append('<li><a href="#" id="'+data.room+'">'+data.room+'</a></li>');
+socket.on('room:get', function(data) {
+  $('ul#room-list').append(room_template_function(data));
 });
 
 $("#chat-input textarea").keypress(function(e) {
     var inputText = $(this).val().trim();
     if(e.which == 13 && inputText) {
 
-    socket.emit('me:message:send', {
+    socket.emit('message:post', {
       room: 'home',
       msg: inputText
     });
@@ -75,7 +65,7 @@ $("body").on('keypress', 'input.new-room', function(e) {
   var inputText = $(this).val().trim();
   if(e.which == 13 && inputText) {
 
-    socket.emit('me:room:create', {
+    socket.emit('room:post', {
       room: inputText
     });
 
@@ -91,3 +81,7 @@ function resizeHandle() {
   $('#chat-container').height(chatHeight);
   $('.nano').nanoScroller().nanoScroller({scroll:'bottom'});
 }
+
+var message_template_function = Handlebars.compile("<p><strong>{{nickname}} : </strong>{{msg}}</p>");
+var user_template_function = Handlebars.compile('<div id="user" class="{{user}}"><p>{{user}}</p></div>');
+var room_template_function = Handlebars.compile('<li><a href="#" id="{{room}}">{{room}}</a></li>')

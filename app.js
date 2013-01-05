@@ -1,10 +1,15 @@
 var express = require('express')
-	, http = require('http')
+	, https = require('https')
 	, passport = require('passport')
 	, redisUrl = require('url').parse(process.env.REDISTOGO_URL)
 	, redisAuth = redisUrl.auth.split(':')
-	, RedisStore = require('connect-redis')(express);
+	, RedisStore = require('connect-redis')(express)
+  , fs = require('fs');
 
+var options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
 
 var sessionStore = exports.sessionStore = new RedisStore({host: redisUrl.hostname, port: redisUrl.port, db: redisAuth[0], pass: redisAuth[1]});
 
@@ -31,7 +36,7 @@ app.configure(function() {
 
 require('./routes');
 
-exports.server = http.createServer(app).listen(app.get('port'), function() {
+exports.server = https.createServer(options, app).listen(app.get('port'), function() {
   console.log('Ballyhoo started on port %d', app.get('port'));
 });
 
