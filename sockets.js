@@ -7,6 +7,7 @@ var parent = module.parent.exports
   , app = parent.app
   , server = parent.server
   , express = require('express')
+  , winston = parent.winston
   , sessionStore = parent.sessionStore
   , sio = require('socket.io')
   , parseCookies = require('connect').utils.parseSignedCookies
@@ -19,7 +20,7 @@ var parent = module.parent.exports
   , redisAuth = parent.redisAuth
   , hubotAddr = parent.nconf.get('HUBOT_ADDRESS').split(',')
   , dl = require('delivery')
-  , client = parent.client
+  , knox = parent.knox
   , mime = require('mime');
 
 var store = redis.createClient(redisUrl.port, redisUrl.hostname);
@@ -40,19 +41,20 @@ io.configure(function() {
     , redisSub : sub
     , redisClient : store}));
   io.set('origins', '*:*');
+  io.set('logger',  {debug: winston.debug, info: winston.info , error: winston.error, warn: winston.warn });
   io.enable('browser client minification');
   io.enable('browser client gzip');
 });
 
 io.set('authorization', function (hsData, accept) {
   if(hsData.headers.cookie) {
-    console.log(hsData.address.address);
+    winston.info('socket.io auth request', hsData.address.address);
     var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
       , sid = cookies[parent.nconf.get('SESSION_KEY')];
 
     sessionStore.load(sid, function(err, session) {
       if(err || !session) {
-        console.log(err);
+        winston.error(err);
         return accept('Error retrieving session!', false);
       }
 
@@ -67,7 +69,7 @@ io.set('authorization', function (hsData, accept) {
     if(hubotAddr.some(function(value) {
       return hsData.address.address.indexOf(value) > -1;
     }) || hsData.address.address.split('.')[0] == '10') {
-      console.log(hsData.address.address);
+      winston.info('Hubot addr', hsData.address.address);
       hsData.ballychat = {
         user : {
           username: parent.nconf.get('HUBOT_NAME'),
@@ -75,13 +77,11 @@ io.set('authorization', function (hsData, accept) {
         }
       }
 
-      console.log('Hubot?');
-
       return accept(null, true);
 
     } else {
-      console.log(hsData.address.address);
-      console.log('something faild');
+      winston.error('IP of failure', hsData.address.address);
+      winston.error('something faild');
       return accept(null, false);
     }
   }
@@ -114,9 +114,13 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
+  socket.on('error', function(data) {
+    winston.error(data);
+  });
+
   socket.on('message:post', function(data) {
     var no_empty = data.msg.replace("\n","");
-    console.log(data);
+    winston.info('Message data',data);
     if(no_empty.length > 0) {
       io.sockets.in(data.room).emit('message:get', {
         nickname: nickname,
@@ -145,9 +149,9 @@ io.sockets.on('connection', function (socket) {
       'Content-Type': mimeType,
       'x-amz-acl': 'public-read'
     };
-    var req = client.putBuffer(file.buffer, file.name, headers, function(err, res) {
+    var req = knox.putBuffer(file.buffer, file.name, headers, function(err, res) {
       if(res.statusCode == 200) {
-        console.log(req.url);
+        winston.info('S3 URL',req.url);
       }
     });
   });

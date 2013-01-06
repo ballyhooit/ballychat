@@ -2,6 +2,7 @@
 /*
  * Restrict paths
  */
+ var winston = module.parent.winston;
 
 exports.restrict = function(req, res, next){
   if(req.isAuthenticated()) next();
@@ -22,12 +23,11 @@ exports.roomExists = function(client, data) {
  */       
 exports.createRoom = function(client, data, next) {
   var test = client.sismember('chat:rooms', data.room);
-  console.log(test);
-  console.log(exports.roomExists(client,data));
+  winston.info(test);
+  winston.info(exports.roomExists(client,data));
   if(test == true) {
-    console.log('room does not exist');
     client.sadd('chat:rooms',data.room, function(err, reply) {
-      console.log('test');
+      winston.info('test');
       if(reply == 1) {
         next();
       } else {

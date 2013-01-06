@@ -4,15 +4,21 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)
   , fs = require('fs')
   , nconf = exports.nconf = require('nconf')
-  , knox = require('knox');
+  , kn = require('knox')
+  , winston = exports.winston = require('winston');
+
+winston.cli({colorize: true});
 
 var options = {
-   key: fs.readFileSync('key.pem'),
+  key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
 };
+
 nconf.env().file('config.json');
 
-var client = exports.client = knox.createClient({
+winston.log('info', nconf.get('REDISTOGO_URL'));
+
+var knox = exports.knox = kn.createClient({
   key: nconf.get('AWS_KEY'),
   secret: nconf.get('AWS_SECRET'),
   bucket: nconf.get('AWS_BUCKET')
@@ -28,7 +34,7 @@ require('./strategy');
 var app = exports.app = express();
 
 app.configure(function() {
-  app.set('port', 1337);
+  app.set('port', nconf.get('PORT'));
   app.set('view engine', 'jade'); 
   app.set('views', __dirname + '/views/themes/default');
   app.use(express.static(__dirname + '/public'));
@@ -43,11 +49,10 @@ app.configure(function() {
   app.use(app.router);
 });
 
-
 require('./routes');
 
 exports.server = https.createServer(options, app).listen(app.get('port'), function() {
-  console.log('Ballyhoo started on port %d', app.get('port'));
+  winston.info('Ballyhoo started on port '+ app.get('port'));
 });
 
 require('./sockets')

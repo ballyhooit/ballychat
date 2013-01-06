@@ -1,7 +1,7 @@
 {
   "name": "Ballychat",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.3.1",
+  "version": "0.3.2-25",
   "dependencies": {
     "express": "3.0.5",
     "connect": "2.7.1",
@@ -16,7 +16,8 @@
     "nconf": "0.6.7",
     "delivery": "0.0.3",
     "knox": "0.4.6",
-    "mime" : "1.2.7"
+    "mime": "1.2.7",
+    "winston": "0.6.2"
   },
   "devDependencies": {
     "nodemon": "*"
@@ -26,16 +27,17 @@
     "start": "app.js"
   },
   "env": {
-    "REDISTOGO_URL": "redis://wiebersk:3d6178d53be371b34e3de85e1822f12b@koi.redistogo.com:9534/",
+    "REDISTOGO_URL": "redis://:HgkK3QtKVW5VYzUv1niPrVkQ6quNOHSAgAYoKdOL3dJpZcSO234zHeXKO015yqvO@node-01b81d9994ac9d75e.openredis.com:10884/",
     "GITHUB_CALLBACK": "http://ballychat.jit.su/auth/github/callback",
     "HUBOT_NAME": "Ballybot",
     "GITHUB_SECRET": "fbae5926d76770187df791ada43a6c29fdbcd460",
-    "HUBOT_ADDRESS": "165.225.130.240,165.225.130.241,165.225.131.4,165.225.131.5,165.225.129.253,165.225.130.235,165.225.130.237,165.225.130.238,165.225.130.239,205.237.179.142",
+    "HUBOT_ADDRESS": "165.225.134.101,165.225.134.102,165.225.134.103,165.225.134.104",
     "GITHUB_CONSUMER": "2764e2873903894ee53e",
-    "AWS_KEY":"AKIAJFRQYP2XPAPMEMOA",
-    "AWS_SECRET":"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",
+    "AWS_KEY": "AKIAJFRQYP2XPAPMEMOA",
+    "AWS_SECRET": "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",
     "AWS_BUCKET": "ballychat",
-    "SESSION_KEY": "ballychat"
+    "SESSION_KEY": "ballychat",
+    "PORT": "8080"
   },
   "engines": {
     "node": "0.8.x"
