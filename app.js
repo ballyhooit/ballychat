@@ -5,13 +5,16 @@ var express = require('express')
   , fs = require('fs')
   , nconf = exports.nconf = require('nconf')
   , kn = require('knox')
-  , winston = exports.winston = require('winston');
+  , winston = exports.winston = require('winston')
+  , httpProxy = require('http-proxy');
 
 winston.cli({colorize: true});
 
 var options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
+  https: {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+  }
 };
 
 nconf.env().file('config.json');
@@ -51,7 +54,7 @@ app.configure(function() {
 
 require('./routes');
 
-exports.server = https.createServer(options, app).listen(app.get('port'), function() {
+exports.server = https.createServer(options.https, app).listen(app.get('port'), function() {
   winston.info('Ballyhoo started on port '+ app.get('port'));
 });
 

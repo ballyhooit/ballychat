@@ -41,6 +41,7 @@ io.configure(function() {
     , redisSub : sub
     , redisClient : store}));
   io.set('origins', '*:*');
+  io.set('log level', 3)
   io.set('logger',  {debug: winston.debug, info: winston.info , error: winston.error, warn: winston.warn });
   io.enable('browser client minification');
   io.enable('browser client gzip');

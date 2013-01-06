@@ -10,9 +10,9 @@ $(function() {
   });
 });
 
-var socket = io.connect('https://localhost', {secure:true});
+var socket = io.connect('https://local.host', {secure:true});
 var delivery; 
-socket.on('error', function (reason){
+socket.on('error', function (reason) {
   console.error('Unable to connect Socket.IO', reason);
 });
 

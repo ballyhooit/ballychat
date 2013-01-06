@@ -17,7 +17,8 @@
     "delivery": "0.0.3",
     "knox": "0.4.6",
     "mime": "1.2.7",
-    "winston": "0.6.2"
+    "winston": "0.6.2",
+    "http-proxy": "0.8.7"
   },
   "devDependencies": {
     "nodemon": "*"
