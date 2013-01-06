@@ -1,17 +1,16 @@
 var express = require('express')
-  , https = require('https')
+  , http = require('http')
   , passport = require('passport')
   , RedisStore = require('connect-redis')(express)
   , fs = require('fs')
   , nconf = exports.nconf = require('nconf')
   , kn = require('knox')
-  , winston = exports.winston = require('winston')
-  , httpProxy = require('http-proxy');
+  , winston = exports.winston = require('winston');
 
 winston.cli({colorize: true});
 
 var options = {
-  https: {
+  http: {
     key: fs.readFileSync('key.pem'),
     cert: fs.readFileSync('cert.pem')
   }
@@ -54,7 +53,7 @@ app.configure(function() {
 
 require('./routes');
 
-exports.server = https.createServer(options.https, app).listen(app.get('port'), function() {
+exports.server = http.createServer(app).listen(app.get('port'), function() {
   winston.info('Ballyhoo started on port '+ app.get('port'));
 });
 
