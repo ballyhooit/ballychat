@@ -1,7 +1,7 @@
 {
-  "name": "Ballychat",
+  "name": "ballychat-api",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.3.2-27",
+  "version": "0.3.5",
   "dependencies": {
     "express": "3.0.5",
     "connect": "2.7.1",
@@ -22,7 +22,7 @@
   "devDependencies": {
     "nodemon": "*"
   },
-  "subdomain": "ballychat",
+  "subdomain": "bc01",
   "scripts": {
     "start": "app.js"
   },
@@ -31,7 +31,7 @@
     "GITHUB_CALLBACK": "http://ballychat.jit.su/auth/github/callback",
     "HUBOT_NAME": "Ballybot",
     "GITHUB_SECRET": "fbae5926d76770187df791ada43a6c29fdbcd460",
-    "HUBOT_ADDRESS": "165.225.134.101,165.225.134.102,165.225.134.103,165.225.134.104",
+    "HUBOT_ADDRESS": "205.237.179.142,165.225.134.101,165.225.134.102,165.225.134.103,165.225.134.104",
     "GITHUB_CONSUMER": "2764e2873903894ee53e",
     "AWS_KEY": "AKIAJFRQYP2XPAPMEMOA",
     "AWS_SECRET": "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",

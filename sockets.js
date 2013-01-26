@@ -8,7 +8,7 @@ var parent = module.parent.exports
   , server = parent.server
   , express = require('express')
   , winston = parent.winston
-  , sessionStore = parent.sessionStore
+  , https = require('https')
   , sio = require('socket.io')
   , parseCookies = require('connect').utils.parseSignedCookies
   , cookie = require('cookie')
@@ -48,55 +48,39 @@ io.configure(function() {
 });
 
 io.set('authorization', function (hsData, accept) {
-  if(hsData.headers.cookie) {
-    winston.info('socket.io auth request', hsData.address.address);
-    var cookies = parseCookies(cookie.parse(hsData.headers.cookie), 'ThisIsASecret')
-      , sid = cookies[parent.nconf.get('SESSION_KEY')];
-
-    sessionStore.load(sid, function(err, session) {
-      if(err || !session) {
-        winston.error(err);
-        return accept('Error retrieving session!', false);
-      }
-
-      hsData.ballychat = {
-        user: session.passport.user
-      };
-
-      return accept(null, true);
-      
+  https.get('https://www.googleapis.com/oauth2/v2/userinfo?access_token='+hsData.query.token, function(res) {
+    var str = '';
+    res.on('data', function(d) {
+      str += d;
     });
-  } else {
-    if(hubotAddr.some(function(value) {
-      return hsData.address.address.indexOf(value) > -1;
-    }) || hsData.address.address.split('.')[0] == '10') {
-      winston.info('Hubot addr', hsData.address.address);
-      hsData.ballychat = {
-        user : {
-          username: parent.nconf.get('HUBOT_NAME'),
-          provider: 'Hubot'
-        }
-      }
 
+    res.on('end', function() {
+      var us = JSON.parse(str);
+      hsData.user = {
+        name: us.name,
+        email: us.email,
+        plus: us.link
+      };
       return accept(null, true);
+    });
 
-    } else {
-      winston.error('IP of failure', hsData.address.address);
-      winston.error('something faild');
-      return accept(null, false);
-    }
-  }
+    res.on('error', function() {
+      return accept(null,false);
+    });
+
+  });
+
 });
-
 
 io.sockets.on('connection', function (socket) {
   var hs = socket.handshake
-    , nickname = hs.ballychat.user.username
-    , provider = hs.ballychat.user.provider
+    , nickname = hs.user.name
+    , provider = 'Ballychat'
     , userKey = provider + ":" + nickname
     , now = new Date()
     , delivery = dl.listen(socket);
-  
+
+
   if(store.sismember('chat:rooms:home:members', nickname)) {
     utils.enterRoom(store, {nickname: nickname, room:'home'}, function() {
       socket.join('home');
