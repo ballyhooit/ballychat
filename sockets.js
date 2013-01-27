@@ -111,7 +111,7 @@ io.sockets.on('connection', function (socket) {
         nickname: nickname,
         provider: provider,
         msg: data.msg,
-        time: new Date()
+        messageTime: new Date()
       });        
     }   
   });
