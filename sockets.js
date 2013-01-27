@@ -61,6 +61,7 @@ io.set('authorization', function (hsData, accept) {
         email: us.email,
         plus: us.link
       };
+      winston.info(hsData.user);
       return accept(null, true);
     });
 
@@ -74,10 +75,9 @@ io.set('authorization', function (hsData, accept) {
 
 io.sockets.on('connection', function (socket) {
   var hs = socket.handshake
-    , nickname = hs.user.name
+    , nickname = hs.user.email
     , provider = 'Ballychat'
     , userKey = provider + ":" + nickname
-    , now = new Date()
     , delivery = dl.listen(socket);
 
 
@@ -110,7 +110,8 @@ io.sockets.on('connection', function (socket) {
       io.sockets.in(data.room).emit('message:get', {
         nickname: nickname,
         provider: provider,
-        msg: data.msg
+        msg: data.msg,
+        time: new Date()
       });        
     }   
   });

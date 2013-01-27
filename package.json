@@ -1,7 +1,7 @@
 {
   "name": "ballychat-api",
   "description": "Web multi-room chat server and client ready to use.",
-  "version": "0.3.5",
+  "version": "0.4.2",
   "dependencies": {
     "express": "3.0.5",
     "connect": "2.7.1",

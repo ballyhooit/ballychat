@@ -5,3 +5,5 @@ config.json
 chats/*
 *.rdb
 config.json
+cert.pem
+key.pem
