@@ -18,7 +18,7 @@ var parent = module.parent.exports
   , redis = require('socket.io/node_modules/redis')
   , redisUrl =  parent.redisUrl  
   , redisAuth = parent.redisAuth
-  , hubotAddr = parent.nconf.get('HUBOT_ADDRESS').split(',')
+  , hubotToken = parent.nconf.get('HUBOT_TOKEN')
   , dl = require('delivery')
   , knox = parent.knox
   , mime = require('mime');
@@ -48,29 +48,39 @@ io.configure(function() {
 });
 
 io.set('authorization', function (hsData, accept) {
-  https.get('https://www.googleapis.com/oauth2/v2/userinfo?access_token='+hsData.query.token, function(res) {
-    var str = '';
-    res.on('data', function(d) {
-      str += d;
+  if(hsData.query.token == hubotToken) {
+    hsData.user = {
+      name: 'Ballybot',
+      email: 'ballybot@ballhoo.it'
+    };
+    winston.info(hsData.user);
+    return accept(null, true);
+  }
+  else {
+    https.get('https://www.googleapis.com/oauth2/v2/userinfo?access_token='+hsData.query.token, function(res) {
+      var str = '';
+      res.on('data', function(d) {
+        str += d;
+      });
+
+      res.on('end', function() {
+        var us = JSON.parse(str);
+        hsData.user = {
+          name: us.name,
+          email: us.email,
+          plus: us.link
+        };
+        winston.info(hsData.user);
+        return accept(null, true);
+      });
+
+      res.on('error', function() {
+        return accept(null,false);
+      });
+
     });
-
-    res.on('end', function() {
-      var us = JSON.parse(str);
-      hsData.user = {
-        name: us.name,
-        email: us.email,
-        plus: us.link
-      };
-      winston.info(hsData.user);
-      return accept(null, true);
-    });
-
-    res.on('error', function() {
-      return accept(null,false);
-    });
-
-  });
-
+  }
+  
 });
 
 io.sockets.on('connection', function (socket) {
